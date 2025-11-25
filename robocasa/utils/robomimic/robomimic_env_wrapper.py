@@ -62,7 +62,7 @@ class EnvRobocasa:
             ignore_done=True,
             use_object_obs=True,
             use_camera_obs=use_image_obs,
-            camera_depths=False,
+            camera_depths=True,
         )
         kwargs.update(update_kwargs)
 
@@ -267,6 +267,14 @@ class EnvRobocasa:
                 ret[k] = di[k][::-1]
                 if self.postprocess_visual_obs:
                     ret[k] = ObsUtils.process_obs(obs=ret[k], obs_key=k)
+            elif (k in ObsUtils.OBS_KEYS_TO_MODALITIES) and ObsUtils.key_is_obs_modality(
+                key=k, obs_modality="depth"
+            ):
+                ret[k] = di[k][::-1]
+                from robosuite.utils.camera_utils import get_real_depth_map
+                ret[k] = get_real_depth_map(self.env.sim, ret[k])
+                if self.postprocess_visual_obs:
+                    ret[k] = ObsUtils.process_obs(obs=ret[k], obs_key=k)
 
         # "object" key contains object information
         if "object-state" in di:
@@ -434,14 +442,17 @@ class EnvRobocasa:
         image_modalities = list(camera_names)
         if is_v1:
             image_modalities = ["{}_image".format(cn) for cn in camera_names]
+            depth_modalities = ["{}_depth".format(cn) for cn in camera_names]
         elif has_camera:
             # v0.3 only had support for one image, and it was named "rgb"
             assert len(image_modalities) == 1
             image_modalities = ["rgb"]
+            depth_modalities = ["depth"]
         obs_modality_specs = {
             "obs": {
                 "low_dim": [],  # technically unused, so we don't have to specify all of them
                 "rgb": image_modalities,
+                "depth": depth_modalities,
             }
         }
         ObsUtils.initialize_obs_utils_with_obs_specs(obs_modality_specs)

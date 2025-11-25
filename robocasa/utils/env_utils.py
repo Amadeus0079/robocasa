@@ -51,7 +51,7 @@ def create_env(
         ignore_done=True,
         use_object_obs=True,
         use_camera_obs=(not render_onscreen),
-        camera_depths=False,
+        camera_depths=True,
         seed=seed,
         obj_instance_split=obj_instance_split,
         generative_textures=generative_textures,

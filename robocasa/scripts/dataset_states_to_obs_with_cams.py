@@ -74,17 +74,6 @@ def extract_trajectory(
     for idx, t in enumerate(index):
         obs = deepcopy(env.reset_to({"states": states[t]}))
 
-        depth_obs = {}
-
-        # Change the depth map to real depth map
-        for key, value in obs.items():
-            if "depth" in key:
-                depth_obs[key] = get_real_depth_map(
-                    env.env.sim, obs[key]
-                )
-            else:
-                depth_obs[key] = value
-
         # extract datagen info
         if add_datagen_info:
             datagen_info = env.base_env.get_datagen_info(action=actions[t])
@@ -121,7 +110,7 @@ def extract_trajectory(
         # collect transition
         traj["states"].append(states[t])
         traj["actions"].append(actions[t])
-        traj["obs"].append(depth_obs)
+        traj["obs"].append(obs)
         traj["rewards"].append(r)
         traj["dones"].append(done)
         traj["datagen_info"].append(datagen_info)
