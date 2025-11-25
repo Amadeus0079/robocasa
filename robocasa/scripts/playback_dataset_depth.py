@@ -555,9 +555,11 @@ def get_playback_args():
         type=str,
         nargs="+",
         default=[
-            "robot0_agentview_left",
+            # "robot0_agentview_left",
             "robot0_agentview_right",
             "robot0_eye_in_hand",
+            "robot0_birdview",
+            # "robot0_handview_right",
         ],
         help="(optional) camera name(s) / image observation(s) to use for rendering on-screen or to video. Default is"
         "None, which corresponds to a predefined camera for each env type",

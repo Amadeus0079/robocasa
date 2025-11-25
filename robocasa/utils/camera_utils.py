@@ -105,9 +105,9 @@ CAM_CONFIGS = dict(
             parent_body="robot0_right_hand",
         ),
         robot0_birdview=dict(
-            pos=[0.3, 0.0, 1.5],
-            quat=[0.707107, 0.0, 0.0, 0.707107],
-            camera_attribs=dict(fovy="75"),
+            pos=[0.1, 0.0, 1.2],
+            quat=[0.707107, 0.0, 0.0, -0.707107],
+            camera_attribs=dict(fovy="90"),
             parent_body="mobilebase0_support",
         ),
     ),
