@@ -358,15 +358,18 @@ def extract_multiple_trajectories(
 
 
 def retrieve_new_index(process_num, current_work_array, work_queue, lock):
+    """
+    可靠地获取下一个工作索引：
+    之前使用 work_queue.empty() 会出现竞态导致最后一个任务丢失。
+    现在改为直接 try get_nowait() 捕获 queue.Empty。
+    """
     with lock:
-        if work_queue.empty():
-            return -1
         try:
-            tmp = work_queue.get(False)
-            current_work_array[process_num] = tmp
-            return tmp
+            tmp = work_queue.get_nowait()
         except queue.Empty:
             return -1
+        current_work_array[process_num] = tmp
+        return tmp
 
 
 def extract_multiple_trajectories_with_error(
@@ -539,8 +542,8 @@ def dataset_states_to_obs_multiprocessing(args):
     num_finished = multiprocessing.Value("i", 0)
     mul_queue = multiprocessing.Queue()
     work_queue = multiprocessing.Queue()
-    for index in range(num_demos):
-        work_queue.put(index)
+    for idx in range(num_demos):
+        work_queue.put(idx)
     current_work_array = multiprocessing.Array("i", num_processes)
     processes = []
     for i in range(num_processes):
