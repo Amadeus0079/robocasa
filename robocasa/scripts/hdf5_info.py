@@ -4,7 +4,7 @@ import os
 from PIL import Image
 import numpy as np
 
-f = h5py.File("/data/zichen/robocasa/datasets/v0.1/single_stage/kitchen_pnp/PnPSinkToCounter/mg/2024-05-04-22-14-34_and_2024-05-07-07-40-21/demo_im128_intvl1.hdf5", "r")
+f = h5py.File("/data/zichen/robocasa/datasets/v0.1/single_stage/kitchen_pnp/PnPSinkToCounter/mg/2024-05-04-22-14-34_and_2024-05-07-07-40-21/demo_im128_active_10.hdf5", "r")
 demo = f["data"]["demo_5"]                        # access demo 5
 obs = demo["obs"]                                 # obervations across all timesteps
 
