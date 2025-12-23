@@ -32,8 +32,8 @@ A_RANGE = (90.0, 270.0)
 E_RANGE = (-90.0, 0.0)
 
 d_window = 0.2
-a_window = 15.0 # 例如，方位角窗口为15度
-e_window = 10.0 # 例如，俯仰角窗口为10度
+a_window = 15.0  # 例如，方位角窗口为15度
+e_window = 10.0  # 例如，俯仰角窗口为10度
 
 def _nearest_rotation(R: np.ndarray) -> np.ndarray:
     """
@@ -396,7 +396,7 @@ def extract_trajectory(
         states=[],
         initial_state_dict=initial_state,
         datagen_info=[],
-        cam_infos=[],
+        cam_info=[],
     )
     traj_len = states.shape[0]
 
@@ -440,7 +440,7 @@ def extract_trajectory(
         cam_info = {}
         
         sim = env.env.sim
-        camera_name = 'robot0_agentview_center'          # 选择要复用的相机槽位
+        camera_name = 'robot0_activeview'          # 选择要复用的相机槽位
         cam_id = sim.model.camera_name2id(camera_name)
 
         eef_pos = obs['robot0_base_to_eef_pos']
@@ -454,10 +454,8 @@ def extract_trajectory(
         # obs.setdefault('robot0_eef_to_cam_pos', sampled_states[0])
 
         for i, name in enumerate(env.env.camera_names):
-            cam_info[name] = {}
-            cam_info[name]["intrinsic_matrix"] = get_camera_intrinsic_matrix(env.env.sim, name, env.env.camera_heights[i], env.env.camera_widths[i])
-            cam_info[name]["extrinsic_matrix"] = get_camera_extrinsic_matrix(env.env.sim, name)
-            cam_info[name]["transform_matrix"] = get_camera_transform_matrix(env.env.sim, name, env.env.camera_heights[i], env.env.camera_widths[i])
+            cam_info[name + "_intrinsics"] = get_camera_intrinsic_matrix(env.env.sim, name, env.env.camera_heights[i], env.env.camera_widths[i])
+            cam_info[name + "_extrinsics"] = get_camera_extrinsic_matrix(env.env.sim, name)
 
         # print(f"DEBUG 2: birdview extrinsic matrix: {get_camera_extrinsic_matrix(env.env.sim, 'robot0_birdview')}")
 
@@ -469,19 +467,16 @@ def extract_trajectory(
         traj["dones"].append(done)
         traj["datagen_info"].append(datagen_info)
         traj["actions_abs"].append(action_abs)
-        traj["cam_infos"].append(cam_info)
+        traj["cam_info"].append(cam_info)
 
     # convert list of dict to dict of list for obs dictionaries (for convenient writes to hdf5 dataset)
     traj["obs"] = TensorUtils.list_of_flat_dict_to_dict_of_list(traj["obs"])
     traj["datagen_info"] = TensorUtils.list_of_flat_dict_to_dict_of_list(
         traj["datagen_info"]
     )
-    traj["cam_infos"] = TensorUtils.list_of_flat_dict_to_dict_of_list(
-        traj["cam_infos"]
+    traj["cam_info"] = TensorUtils.list_of_flat_dict_to_dict_of_list(
+        traj["cam_info"]
     )
-
-    for cam_name in traj["cam_infos"]:
-        traj["cam_infos"][cam_name] = TensorUtils.list_of_flat_dict_to_dict_of_list(traj["cam_infos"][cam_name])
 
     # list to numpy array
     for k in traj:
@@ -489,11 +484,7 @@ def extract_trajectory(
             continue
         if isinstance(traj[k], dict):
             for kp in traj[k]:
-                if isinstance(traj[k][kp], dict):
-                    for kpp in traj[k][kp]:
-                        traj[k][kp][kpp] = np.array(traj[k][kp][kpp])
-                else:
-                    traj[k][kp] = np.array(traj[k][kp])
+                traj[k][kp] = np.array(traj[k][kp])
         else:
             traj[k] = np.array(traj[k])
 
@@ -581,13 +572,12 @@ def write_traj_to_file(
                             data=np.array(traj["datagen_info"][k]),
                         )
 
-                if "cam_infos" in traj:
-                    for k in traj["cam_infos"]:
-                        for kp in traj["cam_infos"][k]:
-                            ep_data_grp.create_dataset(
-                                "cam_info/{}/{}".format(k, kp),
-                                data=np.array(traj["cam_infos"][k][kp]),
-                            )
+                if "cam_info" in traj:
+                    for k in traj["cam_info"]:
+                        ep_data_grp.create_dataset(
+                            "cam_info/{}".format(k),
+                            data=np.array(traj["cam_info"][k]),
+                        )
 
                 # copy action dict (if applicable)
                 if "data/{}/action_dict".format(ep) in f:
@@ -966,15 +956,16 @@ if __name__ == "__main__":
         type=str,
         nargs="+",
         default=[
-            "robot0_agentview_left",
-            "robot0_agentview_right",
+            # "robot0_agentview_left",
+            # "robot0_agentview_right",
             "robot0_eye_in_hand",
             # "robot0_handview_left",
-            "robot0_handview_right",
+            # "robot0_handview_right",
             # "robot0_handview_front",
             "robot0_agentview_center",
             # "robot0_frontview",
-            "robot0_birdview",
+            # "robot0_birdview",
+            "robot0_activeview",
         ],
         help="(optional) camera name(s) to use for image observations. Leave out to not use image observations.",
     )

@@ -47,7 +47,7 @@ DEFAULT_LAYOUT_CAM = {
 CAM_CONFIGS = dict(
     DEFAULT=dict(
         robot0_agentview_center=dict(
-            pos=[-0.6, 0.0, 1.15],
+            pos=[-1.2, 0.0, 1.15],
             quat=[
                 0.636945903301239,
                 0.3325185477733612,
@@ -108,6 +108,17 @@ CAM_CONFIGS = dict(
             pos=[0.1, 0.0, 1.2],
             quat=[0.707107, 0.0, 0.0, -0.707107],
             camera_attribs=dict(fovy="90"),
+            parent_body="mobilebase0_support",
+        ),
+        robot0_activeview=dict(
+            pos=[-1.2, 0.0, 1.15],
+            quat=[
+                0.636945903301239,
+                0.3325185477733612,
+                -0.3199238181114197,
+                -0.6175596117973328,
+            ],
+            camera_attribs=dict(fovy="75"),
             parent_body="mobilebase0_support",
         ),
     ),
